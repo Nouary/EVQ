@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Stations</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="nav-container">
+        <div class="logo-container">
+            <img src="images/logo.png" alt="Logo" class="logo-image">
+        </div>
+        <nav class="navbar">
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="active"><a href="find-stations.html">Find Stations</a></li>
+                <li><a href="schedule.html">Schedule</a></li>
+                <li><a href="history.html">History</a></li>
+                <li><a href="settings.html">Settings</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Background Shapes -->
+    <div class="background-shapes">
+        <div class="shape" style="width: 400px; height: 400px; background: #3498db; top: 20%; left: 10%; animation-duration: 25s;"></div>
+        <div class="shape" style="width: 600px; height: 600px; background: #e74c3c; bottom: 15%; right: 10%; animation-duration: 30s; animation-delay: 5s;"></div>
+        <div class="shape" style="width: 300px; height: 300px; background: #2ecc71; top: 60%; left: 40%; animation-duration: 20s; animation-delay: 10s;"></div>
+        <div class="shape" style="width: 500px; height: 500px; background: #f1c40f; top: 30%; right: 20%; animation-duration: 35s; animation-delay: 7s;"></div>
+        <div class="shape" style="width: 350px; height: 350px; background: #9b59b6; bottom: 25%; left: 25%; animation-duration: 28s; animation-delay: 12s;"></div>
+        <div class="shape" style="width: 450px; height: 450px; background: #1abc9c; top: 15%; right: 30%; animation-duration: 22s; animation-delay: 8s;"></div>
+        <div class="shape" style="width: 250px; height: 250px; background: #e67e22; bottom: 40%; right: 25%; animation-duration: 18s; animation-delay: 15s;"></div>
+        <div class="shape" style="width: 550px; height: 550px; background: #3498db; top: 50%; left: 15%; animation-duration: 32s; animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content find-stations">
+        <div class="search-container">
+            <div class="search-header">
+                <h1>Find Charging Stations</h1>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search by location or station name...">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+
+            <div class="filter-panel">
+                <div class="filter-section">
+                    <h3>Filters <i class="fas fa-sliders-h"></i></h3>
+                    <div class="filter-group">
+                        <label>Charging Speed</label>
+                        <select>
+                            <option value="all">All Speeds</option>
+                            <option value="fast">Fast (50kW+)</option>
+                            <option value="standard">Standard (22kW)</option>
+                            <option value="slow">Slow (3-7kW)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Plug Type</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" checked> CCS</label>
+                            <label><input type="checkbox" checked> CHAdeMO</label>
+                            <label><input type="checkbox" checked> Type 2</label>
+                            <label><input type="checkbox"> Tesla</label>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Price Range</label>
+                        <input type="range" min="0" max="1" step="0.1" value="1">
+                        <div class="price-range">
+                            <span>Free</span>
+                            <span>$$$</span>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label><input type="checkbox" name="renewable"> Renewable Energy Only</label>
+                    </div>
+                    <button class="apply-filters">Apply Filters</button>
+                </div>
+            </div>
+
+            <div class="map-view-container">
+                <div class="view-toggle">
+                    <button class="active" id="map-view-btn"><i class="fas fa-map"></i> Map View</button>
+                    <button id="list-view-btn"><i class="fas fa-list"></i> List View</button>
+                </div>
+
+                <div class="map-container">
+                    <div id="map">
+                        <div class="map-loading">
+                            <div class="map-loading-spinner"></div>
+                            <p>Loading stations near you...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="station-list" style="display: none;">
+                    <div class="station-card">
+                        <div class="station-status available"></div>
+                        <div class="station-info">
+                            <h3>Green Energy Station</h3>
+                            <p><i class="fas fa-map-marker-alt"></i> 1.2 miles away</p>
+                            <div class="station-details">
+                                <span><i class="fas fa-bolt"></i> 50kW</span>
+                                <span><i class="fas fa-plug"></i> CCS, Type 2</span>
+                                <span><i class="fas fa-leaf"></i> Renewable</span>
+                            </div>
+                        </div>
+                        <button class="view-station-btn">View</button>
+                    </div>
+                    <div class="station-list" style="display: none;">
+                        <div class="station-card">
+                            <div class="station-status available"></div>
+                            <div class="station-info">
+                                <h3>SolarCharge Hub</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 0.9 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 75kW</span>
+                                    <span><i class="fas fa-plug"></i> CCS, CHAdeMO</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status busy"></div>
+                            <div class="station-info">
+                                <h3>EcoCharge Point</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 2.4 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 22kW</span>
+                                    <span><i class="fas fa-plug"></i> Type 2</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status available"></div>
+                            <div class="station-info">
+                                <h3>VoltStop Station</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 1.8 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 100kW</span>
+                                    <span><i class="fas fa-plug"></i> CCS, Type 2</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status offline"></div>
+                            <div class="station-info">
+                                <h3>Green Energy Station</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 3.2 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 50kW</span>
+                                    <span><i class="fas fa-plug"></i> CCS</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status available"></div>
+                            <div class="station-info">
+                                <h3>RapidEV Charger</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 0.5 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 120kW</span>
+                                    <span><i class="fas fa-plug"></i> CCS, CHAdeMO</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status busy"></div>
+                            <div class="station-info">
+                                <h3>EcoVolt Plug</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 4.1 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 60kW</span>
+                                    <span><i class="fas fa-plug"></i> Type 2</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status available"></div>
+                            <div class="station-info">
+                                <h3>SunVolt Station</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 1.3 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 90kW</span>
+                                    <span><i class="fas fa-plug"></i> CCS, Type 2</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status offline"></div>
+                            <div class="station-info">
+                                <h3>ZeroCarbon Hub</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 2.9 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 30kW</span>
+                                    <span><i class="fas fa-plug"></i> Type 2, CCS</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status available"></div>
+                            <div class="station-info">
+                                <h3>ChargeGreen Point</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 0.7 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 45kW</span>
+                                    <span><i class="fas fa-plug"></i> Type 2</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    
+                        <div class="station-card">
+                            <div class="station-status busy"></div>
+                            <div class="station-info">
+                                <h3>UrbanEV Charge</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> 3.5 miles away</p>
+                                <div class="station-details">
+                                    <span><i class="fas fa-bolt"></i> 80kW</span>
+                                    <span><i class="fas fa-plug"></i> CCS, CHAdeMO</span>
+                                    <span><i class="fas fa-leaf"></i> Renewable</span>
+                                </div>
+                            </div>
+                            <button class="view-station-btn">View</button>
+                        </div>
+                    </div>
+                    
+                    <!-- More station cards would go here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="station-detail-panel">
+            <div class="panel-header">
+                <h2>Station Details</h2>
+                <button class="close-panel"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="panel-content">
+                <div class="station-header">
+                    <div class="station-status available"></div>
+                    <h3>Green Energy Station</h3>
+                    <div class="station-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>4.5 (24 reviews)</span>
+                    </div>
+                </div>
+                
+                <div class="station-address">
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Electric Ave, Tech City</p>
+                    <p class="distance"><i class="fas fa-location-arrow"></i> 1.2 miles from your location</p>
+                </div>
+                
+                <div class="station-specs">
+                    <div class="spec-card">
+                        <i class="fas fa-bolt"></i>
+                        <h4>Charging Speed</h4>
+                        <p>50kW DC Fast</p>
+                    </div>
+                    <div class="spec-card">
+                        <i class="fas fa-plug"></i>
+                        <h4>Connectors</h4>
+                        <p>CCS, CHAdeMO, Type 2</p>
+                    </div>
+                    <div class="spec-card">
+                        <i class="fas fa-leaf"></i>
+                        <h4>Energy Source</h4>
+                        <p>100% Renewable</p>
+                    </div>
+                    <div class="spec-card">
+                        <i class="fas fa-coins"></i>
+                        <h4>Price</h4>
+                        <p>$0.35/kWh</p>
+                    </div>
+                </div>
+                
+                <div class="amenities">
+                    <h4>Amenities Nearby</h4>
+                    <div class="amenity-icons">
+                        <span><i class="fas fa-coffee"></i> Café</span>
+                        <span><i class="fas fa-utensils"></i> Restaurant</span>
+                        <span><i class="fas fa-shopping-bag"></i> Shopping</span>
+                        <span><i class="fas fa-restroom"></i> Restroom</span>
+                    </div>
+                </div>
+                
+                <div class="booking-section">
+                    <h4>Book This Station</h4>
+                    <form class="booking-form">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (hours)</label>
+                            <select>
+                                <option>1 hour</option>
+                                <option>2 hours</option>
+                                <option>4 hours</option>
+                                <option>6 hours</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="book-now-btn">Book Now</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Bar -->
+    <div class="booking-bar">
+        <button class="close-booking-bar">&times;</button>
+        <!-- Booking bar content here -->
+    </div>
+
+    <!-- Booking Confirmation Modal -->
+    <div class="modal-overlay" style="display: none;">
+        <div class="booking-confirmation">
+            <div class="confirmation-header">
+                <i class="fas fa-check-circle"></i>
+                <h2>Booking Confirmed!</h2>
+            </div>
+            <div class="confirmation-details">
+                <p><strong>Station:</strong> Green Energy Station</p>
+                <p><strong>Date:</strong> June 15, 2023</p>
+                <p><strong>Time:</strong> 2:00 PM - 4:00 PM</p>
+                <p><strong>Total Cost:</strong> $12.50 (estimated)</p>
+            </div>
+            <div class="confirmation-actions">
+                <button class="view-booking-btn">View in My Bookings</button>
+                <button class="close-modal-btn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="scripts/find-stations.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVQ - Stay Charged. Stay Ahead.</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Floating Background Shapes */
+        body {
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.12;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5vw, 10vh) rotate(5deg); }
+            50% { transform: translate(10vw, -5vh) rotate(-5deg); }
+            75% { transform: translate(-8vw, 8vh) rotate(8deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Background Shapes -->
+    <div class="background-shapes">
+        <div class="shape" style="width: 400px; height: 400px; background: #3498db; top: 20%; left: 10%; animation-duration: 25s;"></div>
+        <div class="shape" style="width: 600px; height: 600px; background: #e74c3c; bottom: 15%; right: 10%; animation-duration: 30s; animation-delay: 5s;"></div>
+        <div class="shape" style="width: 300px; height: 300px; background: #2ecc71; top: 60%; left: 40%; animation-duration: 20s; animation-delay: 10s;"></div>
+        <div class="shape" style="width: 500px; height: 500px; background: #f1c40f; top: 30%; right: 20%; animation-duration: 35s; animation-delay: 7s;"></div>
+        <div class="shape" style="width: 350px; height: 350px; background: #9b59b6; bottom: 25%; left: 25%; animation-duration: 28s; animation-delay: 12s;"></div>
+        <div class="shape" style="width: 450px; height: 450px; background: #1abc9c; top: 15%; right: 30%; animation-duration: 22s; animation-delay: 8s;"></div>
+        <div class="shape" style="width: 250px; height: 250px; background: #e67e22; bottom: 40%; right: 25%; animation-duration: 18s; animation-delay: 15s;"></div>
+        <div class="shape" style="width: 550px; height: 550px; background: #3498db; top: 50%; left: 15%; animation-duration: 32s; animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Slim Navigation Bar with Left Logo -->
+    <div class="nav-container">
+        <div class="logo-container">
+            <img src="images/logo.png" alt="EVQ Logo" class="logo-image">
+        </div>
+        <nav class="navbar">
+            <ul class="nav-links">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li><a href="find-stations.html">Find Stations</a></li>
+                <li><a href="schedule.html">Schedule</a></li>
+                <li><a href="history.html">History</a></li>
+                <li><a href="settings.html">Settings</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <header>
+                <h1>EVQ</h1>
+                <p class="tagline">Stay Charged. Stay Ahead.</p>
+                <button class="cta-button">Get Started</button>
+            </header>
+            <div class="features">
+                <div class="feature-card">
+                    <h2>Real-time Mapping</h2>
+                    <p>Find available charging stations near you with live status updates</p>
+                </div>
+
+                <div class="feature-card">
+                    <h2>Smart Charging</h2>
+                    <p>Get optimal charging suggestions based on your schedule</p>
+                </div>
+
+                <div class="feature-card">
+                    <h2>Easy Booking</h2>
+                    <p>Reserve your charging slot in advance to avoid waiting</p>
+                </div>
+
+                <div class="feature-card">
+                    <h2>CO₂ Tracking</h2>
+                    <p>Monitor your environmental impact and carbon savings</p>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">1,234</div>
+                    <div class="stat-label">Active Stations</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50,000+</div>
+                    <div class="stat-label">kg CO₂ Saved</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10,000+</div>
+                    <div class="stat-label">Happy Users</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([51.505, -0.09], 13);
+        
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add sample markers (charging stations)
+        L.marker([51.5, -0.09]).addTo(map)
+            .bindPopup('Charging Station 1<br>4 ports available');
+            
+        L.marker([51.51, -0.1]).addTo(map)
+            .bindPopup('Charging Station 2<br>2 ports available');
+            
+        L.marker([51.49, -0.08]).addTo(map)
+            .bindPopup('Charging Station 3<br>Fully occupied');
+
+        // Generate additional random shapes
+        document.addEventListener('DOMContentLoaded', function() {
+            const shapesContainer = document.querySelector('.background-shapes');
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#1abc9c', '#e67e22'];
+            
+            for (let i = 0; i < 15; i++) {
+                const shape = document.createElement('div');
+                shape.className = 'shape';
+                
+                const size = Math.floor(Math.random() * 400) + 100;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const top = Math.random() * 100;
+                const left = Math.random() * 100;
+                const duration = Math.floor(Math.random() * 30) + 15;
+                const delay = Math.floor(Math.random() * 20);
+                
+                shape.style.width = `${size}px`;
+                shape.style.height = `${size}px`;
+                shape.style.background = color;
+                shape.style.top = `${top}%`;
+                shape.style.left = `${left}%`;
+                shape.style.animationDuration = `${duration}s`;
+                shape.style.animationDelay = `${delay}s`;
+                
+                shapesContainer.appendChild(shape);
+            }
+        });
+    </script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <!-- Your custom JS -->
+    <script src="scripts/main.js"></script>
+</body>
+</html>

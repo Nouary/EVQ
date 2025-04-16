@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Charging | EVQ</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* Base Styles (same as before) */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding-top: 80px; /* Adjust padding to prevent navigation bar overlap */
+        }
+
+        /* Floating Background Shapes (same as before) */
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.12;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5vw, 10vh) rotate(5deg); }
+            50% { transform: translate(10vw, -5vh) rotate(-5deg); }
+            75% { transform: translate(-8vw, 8vh) rotate(8deg); }
+        }
+
+        /* Navigation Bar (same as before) */
+        .nav-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 1200px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            background: rgba(25, 100, 160, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 60px;
+            padding: 0 20px;
+        }
+
+        .logo-container {
+            height: 40px;
+            width: auto;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-image {
+            width: 80px;
+            height: auto;
+            max-width: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            transition: transform 0.3s ease;
+            border-radius: 7%;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.05);
+        }
+
+        .navbar {
+            flex-grow: 1;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-links .active a {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding-top: 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Scheduling Container */
+        .scheduling-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* Station Selector */
+        .station-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .selector-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .view-toggle {
+            display: flex;
+            background: #f1f3f5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .view-toggle button {
+            padding: 8px 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .view-toggle button.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .map-container {
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #station-map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .station-filters {
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .station-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .station-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .station-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.1);
+        }
+
+        .station-card.selected {
+            border-color: #3498db;
+            background: #f0f7fd;
+        }
+
+        .station-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .station-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .station-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-available { background: #2ecc71; }
+        .status-busy { background: #f39c12; }
+        .status-offline { background: #e74c3c; }
+
+        /* Scheduling Section */
+        .scheduling-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .scheduling-section h2 {
+            margin: 0 0 20px 0;
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .datetime-selector {
+            margin-bottom: 25px;
+        }
+
+        .datetime-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .time-slot {
+            padding: 8px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .time-slot.available {
+            background: #e8f7ee;
+            color: #27ae60;
+            border: 1px solid #2ecc71;
+        }
+
+        .time-slot.available:hover {
+            background: #d5f0e0;
+        }
+
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            color: #95a5a6;
+            border: 1px solid #ddd;
+            cursor: not-allowed;
+        }
+
+        .time-slot.selected {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .recurring-option {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Charging Preferences */
+        .charging-preferences {
+            margin-bottom: 25px;
+        }
+
+        .preference-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .preference-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .preference-card:hover {
+            background: #e9ecef;
+        }
+
+        .preference-card.selected {
+            background: #3498db;
+            color: white;
+        }
+
+        .preference-card i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Session Summary */
+        .session-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .summary-total {
+            font-size: 1.1rem;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .booking-confirmation {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .confirmation-header i {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+
+        .confirmation-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+
+        .confirmation-header p {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+
+        .confirmation-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .confirmation-qr {
+            margin: 20px 0;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .scheduling-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .time-slots {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .preference-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .datetime-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .time-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="nav-container">
+        <div class="logo-container">
+            <img src="images/logo.png" alt="Logo" class="logo-image">
+        </div>
+        <nav class="navbar">
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="find-stations.html">Find Stations</a></li>
+                <li class="active"><a href="schedule.html">Schedule</a></li>
+                <li><a href="history.html">History</a></li>
+                <li><a href="settings.html">Settings</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Background Shapes -->
+    <div class="background-shapes">
+        <div class="shape" style="width: 400px; height: 400px; background: #3498db; top: 20%; left: 10%; animation-duration: 25s;"></div>
+        <div class="shape" style="width: 600px; height: 600px; background: #e74c3c; bottom: 15%; right: 10%; animation-duration: 30s; animation-delay: 5s;"></div>
+        <div class="shape" style="width: 300px; height: 300px; background: #2ecc71; top: 60%; left: 40%; animation-duration: 20s; animation-delay: 10s;"></div>
+        <div class="shape" style="width: 500px; height: 500px; background: #f1c40f; top: 30%; right: 20%; animation-duration: 35s; animation-delay: 7s;"></div>
+        <div class="shape" style="width: 350px; height: 350px; background: #9b59b6; bottom: 25%; left: 25%; animation-duration: 28s; animation-delay: 12s;"></div>
+        <div class="shape" style="width: 450px; height: 450px; background: #1abc9c; top: 15%; right: 30%; animation-duration: 22s; animation-delay: 8s;"></div>
+        <div class="shape" style="width: 250px; height: 250px; background: #e67e22; bottom: 40%; right: 25%; animation-duration: 18s; animation-delay: 15s;"></div>
+        <div class="shape" style="width: 550px; height: 550px; background: #3498db; top: 50%; left: 15%; animation-duration: 32s; animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Schedule Your Charging Session</h1>
+            <p>Book your preferred time slot and charging options to ensure availability when you arrive</p>
+        </div>
+
+        <div class="scheduling-container">
+            <!-- Station Selector Section -->
+            <div class="station-selector">
+                <div class="selector-header">
+                    <h2><i class="fas fa-charging-station"></i> Select Station</h2>
+                    <div class="view-toggle">
+                        <button class="active" id="list-view-btn"><i class="fas fa-list"></i> List</button>
+                        <button id="map-view-btn"><i class="fas fa-map"></i> Map</button>
+                    </div>
+                </div>
+
+                <div class="map-container" style="display: none;">
+                    <div id="station-map"></div>
+                </div>
+
+                <div class="station-filters">
+                    <div class="filter-group">
+                        <label>Filter Stations</label>
+                        <select id="station-filter">
+                            <option value="all">All Stations</option>
+                            <option value="available">Available Now</option>
+                            <option value="fast">Fast Chargers (50kW+)</option>
+                            <option value="renewable">Renewable Energy</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Connector Types</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" checked> CCS</label>
+                            <label><input type="checkbox" checked> Type 2</label>
+                            <label><input type="checkbox" checked> CHAdeMO</label>
+                            <label><input type="checkbox"> Tesla</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="station-list" id="station-list">
+                    <!-- Station cards will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Scheduling Section -->
+            <div class="scheduling-section">
+                <h2><i class="far fa-calendar-alt"></i> Select Date & Time</h2>
+                
+                <div class="datetime-selector">
+                    <div class="datetime-group">
+                        <div class="filter-group">
+                            <label>Date</label>
+                            <input type="text" id="date-picker" placeholder="Select date">
+                        </div>
+                        <div class="filter-group">
+                            <label>Time</label>
+                            <input type="text" id="time-picker" placeholder="Select time">
+                        </div>
+                    </div>
+
+                    <div class="time-slots" id="time-slots">
+                        <!-- Time slots will be populated by JavaScript -->
+                    </div>
+
+                    <div class="recurring-option">
+                        <input type="checkbox" id="recurring">
+                        <label for="recurring">Make this a recurring booking (weekly)</label>
+                    </div>
+                </div>
+
+                <div class="charging-preferences">
+                    <h2><i class="fas fa-sliders-h"></i> Charging Preferences</h2>
+                    <div class="preference-grid">
+                        <div class="preference-card" data-pref="fast">
+                            <i class="fas fa-bolt"></i>
+                            <h3>Fast Charge</h3>
+                            <p>Maximum power (50kW+)</p>
+                        </div>
+                        <div class="preference-card" data-pref="balanced">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <h3>Balanced</h3>
+                            <p>Standard speed (22kW)</p>
+                        </div>
+                        <div class="preference-card" data-pref="eco">
+                            <i class="fas fa-leaf"></i>
+                            <h3>Eco Mode</h3>
+                            <p>Slow charge (3-7kW)</p>
+                        </div>
+                        <div class="preference-card" data-pref="custom">
+                            <i class="fas fa-cog"></i>
+                            <h3>Custom</h3>
+                            <p>Set your preferences</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="session-summary">
+                    <h3><i class="fas fa-receipt"></i> Session Summary</h3>
+                    <div class="summary-item">
+                        <span class="summary-label">Station:</span>
+                        <span class="summary-value" id="summary-station">Not selected</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Date & Time:</span>
+                        <span class="summary-value" id="summary-datetime">Not selected</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Duration:</span>
+                        <span class="summary-value" id="summary-duration">1 hour</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Charging Mode:</span>
+                        <span class="summary-value" id="summary-mode">Not selected</span>
+                    </div>
+                    <div class="summary-total">
+                        <span class="summary-label">Estimated Cost:</span>
+                        <span class="summary-value" id="summary-cost">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="notification-options">
+                    <h2><i class="fas fa-bell"></i> Notifications</h2>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" checked> Email confirmation</label>
+                        <label><input type="checkbox" checked> SMS reminder 30 mins before</label>
+                        <label><input type="checkbox"> Add to calendar</label>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="reset-btn">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                    <button class="btn btn-primary" id="confirm-btn">
+                        <i class="fas fa-calendar-check"></i> Confirm Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmation-modal">
+        <div class="booking-confirmation">
+            <div class="confirmation-header">
+                <i class="fas fa-check-circle"></i>
+                <h2>Booking Confirmed!</h2>
+                <p>Your charging session has been successfully scheduled</p>
+            </div>
+            <div class="confirmation-details">
+                <p><strong>Booking ID:</strong> <span id="booking-id">EVQ-2023-5874</span></p>
+                <p><strong>Station:</strong> <span id="confirm-station">Green Energy Station</span></p>
+                <p><strong>Date & Time:</strong> <span id="confirm-datetime">June 15, 2023 at 2:00 PM</span></p>
+                <p><strong>Duration:</strong> <span id="confirm-duration">1 hour</span></p>
+                <p><strong>Connector:</strong> <span id="confirm-connector">CCS (50kW)</span></p>
+            </div>
+            <div class="confirmation-qr">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=EVQ-BOOKING-2023-5874" alt="QR Code">
+            </div>
+            <div class="confirmation-actions">
+                <button class="btn btn-primary" id="view-booking-btn">
+                    <i class="fas fa-calendar"></i> View in Bookings
+                </button>
+                <button class="btn btn-secondary" id="close-modal-btn">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample station data
+            const stations = [
+                {
+                    id: 1,
+                    name: "Green Energy Station",
+                    address: "123 Electric Ave, Tech City",
+                    distance: "1.2 miles",
+                    status: "available",
+                    power: "50kW",
+                    connectors: ["CCS", "Type 2"],
+                    renewable: true,
+                    price: 0.35,
+                    lat: 51.515,
+                    lng: -0.09
+                },
+                {
+                    id: 2,
+                    name: "City Center Charger",
+                    address: "456 Main St, Downtown",
+                    distance: "2.5 miles",
+                    status: "busy",
+                    power: "22kW",
+                    connectors: ["Type 2"],
+                    renewable: false,
+                    price: 0.45,
+                    lat: 51.51,
+                    lng: -0.1
+                },
+                {
+                    id: 3,
+                    name: "Mall Parking Charger",
+                    address: "789 Shopping Blvd",
+                    distance: "3.1 miles",
+                    status: "available",
+                    power: "50kW",
+                    connectors: ["CCS", "CHAdeMO", "Type 2"],
+                    renewable: false,
+                    price: 0.55,
+                    lat: 51.49,
+                    lng: -0.08
+                },
+                {
+                    id: 4,
+                    name: "Solar-Powered Charger",
+                    address: "Eco Park, Green Lane",
+                    distance: "4.3 miles",
+                    status: "available",
+                    power: "22kW",
+                    connectors: ["Type 2"],
+                    renewable: true,
+                    price: 0.40,
+                    lat: 51.495,
+                    lng: -0.105
+                },
+                {
+                    id: 5,
+                    name: "Tech Park Charging Hub",
+                    address: "22 Innovation Way",
+                    distance: "5.0 miles",
+                    status: "available",
+                    power: "150kW",
+                    connectors: ["CCS", "CHAdeMO", "Type 2", "Tesla"],
+                    renewable: true,
+                    price: 0.50,
+                    lat: 51.53,
+                    lng: -0.07
+                }
+            ];
+
+            // Initialize map
+            const map = L.map('station-map').setView([51.505, -0.09], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add station markers to map
+            stations.forEach(station => {
+                const marker = L.marker([station.lat, station.lng]).addTo(map)
+                    .bindPopup(`<b>${station.name}</b><br>${station.address}`);
+            });
+
+            // Initialize date and time pickers
+            flatpickr("#date-picker", {
+                minDate: "today",
+                dateFormat: "Y-m-d",
+                onChange: updateTimeSlots
+            });
+
+            flatpickr("#time-picker", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                minuteIncrement: 30,
+                onChange: updateTimeSlots
+            });
+
+            // Populate station list
+            const stationList = document.getElementById('station-list');
+            
+            function renderStationList(filteredStations = stations) {
+                stationList.innerHTML = '';
+                filteredStations.forEach(station => {
+                    const stationCard = document.createElement('div');
+                    stationCard.className = 'station-card';
+                    stationCard.innerHTML = `
+                        <h3>${station.name}</h3>
+                        <div class="station-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> ${station.distance}</span>
+                            <span><i class="fas fa-bolt"></i> ${station.power}</span>
+                            <span><span class="station-status status-${station.status}"></span> ${station.status.charAt(0).toUpperCase() + station.status.slice(1)}</span>
+                        </div>
+                        <p><i class="fas fa-plug"></i> ${station.connectors.join(', ')}</p>
+                        ${station.renewable ? '<p><i class="fas fa-leaf"></i> Renewable energy</p>' : ''}
+                    `;
+                    stationCard.addEventListener('click', () => selectStation(station));
+                    stationList.appendChild(stationCard);
+                });
+            }
+
+            // Initial render
+            renderStationList();
+
+            // Station selection
+            let selectedStation = null;
+            
+            function selectStation(station) {
+                selectedStation = station;
+                
+                // Update UI
+                document.querySelectorAll('.station-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                event.currentTarget.classList.add('selected');
+                
+                // Update summary
+                document.getElementById('summary-station').textContent = station.name;
+                updateCostEstimate();
+            }
+
+            // Time slot selection
+            function updateTimeSlots() {
+                const date = document.getElementById('date-picker').value;
+                const time = document.getElementById('time-picker').value;
+                
+                if (!date || !time) return;
+                
+                const timeSlotsContainer = document.getElementById('time-slots');
+                timeSlotsContainer.innerHTML = '';
+                
+                // Generate time slots (in a real app, this would come from an API)
+                const baseTime = new Date(`${date}T${time}`);
+                const slots = [];
+                
+                for (let i = 0; i < 12; i++) {
+                    const slotTime = new Date(baseTime);
+                    slotTime.setMinutes(slotTime.getMinutes() + i * 30);
+                    
+                    const hours = slotTime.getHours().toString().padStart(2, '0');
+                    const minutes = slotTime.getMinutes().toString().padStart(2, '0');
+                    const timeString = `${hours}:${minutes}`;
+                    
+                    // Random availability for demo
+                    const available = Math.random() > 0.3;
+                    
+                    const slot = document.createElement('div');
+                    slot.className = `time-slot ${available ? 'available' : 'unavailable'}`;
+                    slot.textContent = timeString;
+                    slot.addEventListener('click', () => {
+                        if (!available) return;
+                        
+                        document.querySelectorAll('.time-slot').forEach(s => {
+                            s.classList.remove('selected');
+                        });
+                        slot.classList.add('selected');
+                        
+                        // Update summary
+                        document.getElementById('summary-datetime').textContent = 
+                            `${date} at ${timeString}`;
+                        updateCostEstimate();
+                    });
+                    
+                    timeSlotsContainer.appendChild(slot);
+                }
+            }
+
+            // Charging preference selection
+            document.querySelectorAll('.preference-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.preference-card').forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    // Update summary
+                    const mode = this.querySelector('h3').textContent;
+                    document.getElementById('summary-mode').textContent = mode;
+                    updateCostEstimate();
+                });
+            });
+
+            // Cost estimation
+            function updateCostEstimate() {
+                if (!selectedStation) return;
+                
+                // Simple calculation for demo
+                const duration = 1; // hours
+                const rate = selectedStation.price;
+                const cost = (duration * rate * 7).toFixed(2); // Assuming 7kW average
+                
+                document.getElementById('summary-cost').textContent = `$${cost}`;
+            }
+
+            // View toggle
+            document.getElementById('map-view-btn').addEventListener('click', function() {
+                document.querySelector('.map-container').style.display = 'block';
+                document.getElementById('station-list').style.display = 'none';
+                this.classList.add('active');
+                document.getElementById('list-view-btn').classList.remove('active');
+                map.invalidateSize(); // Refresh map size
+            });
+
+            document.getElementById('list-view-btn').addEventListener('click', function() {
+                document.querySelector('.map-container').style.display = 'none';
+                document.getElementById('station-list').style.display = 'block';
+                this.classList.add('active');
+                document.getElementById('map-view-btn').classList.remove('active');
+            });
+
+            // Station filtering
+            document.getElementById('station-filter').addEventListener('change', function() {
+                const filter = this.value;
+                let filteredStations = stations;
+                
+                if (filter === 'available') {
+                    filteredStations = stations.filter(s => s.status === 'available');
+                } else if (filter === 'fast') {
+                    filteredStations = stations.filter(s => parseInt(s.power) >= 50);
+                } else if (filter === 'renewable') {
+                    filteredStations = stations.filter(s => s.renewable);
+                }
+                
+                renderStationList(filteredStations);
+            });
+
+            // Reset button
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                // Reset all selections
+                selectedStation = null;
+                document.querySelectorAll('.station-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelectorAll('.preference-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelectorAll('.time-slot').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+                
+                // Reset summary
+                document.getElementById('summary-station').textContent = 'Not selected';
+                document.getElementById('summary-datetime').textContent = 'Not selected';
+                document.getElementById('summary-mode').textContent = 'Not selected';
+                document.getElementById('summary-cost').textContent = '$0.00';
+                
+                // Reset form inputs
+                document.getElementById('date-picker')._flatpickr.clear();
+                document.getElementById('time-picker')._flatpickr.clear();
+            });
+
+            // Confirmation modal
+            const modal = document.getElementById('confirmation-modal');
+            
+            document.getElementById('confirm-btn').addEventListener('click', function() {
+                if (!selectedStation) {
+                    alert('Please select a station first');
+                    return;
+                }
+                
+                // In a real app, this would send data to the server
+                modal.style.display = 'flex';
+            });
+
+            document.getElementById('close-modal-btn').addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+
+            document.getElementById('view-booking-btn').addEventListener('click', function() {
+                // In a real app, this would redirect to the bookings page
+                alert('Redirecting to your bookings...');
+                modal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Charging History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="styles/style.css">
+    <style>
+        body {
+            padding-top: 80px; /* Adjust padding to prevent navigation bar overlap */
+        }
+    </style>
+</head>
+<body>
+        <!-- Background Shapes -->
+        <div class="background-shapes" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;">
+            <div class="shape" style="position: absolute; width: 400px; height: 400px; background: #3498db; top: 25%; left: 12%; animation-duration: 25s; filter: blur(80px);"></div>
+            <div class="shape" style="position: absolute; width: 600px; height: 600px; background: #e74c3c; bottom: 10%; right: 8%; animation-duration: 30s; animation-delay: 5s; filter: blur(90px);"></div>
+            <div class="shape" style="position: absolute; width: 300px; height: 300px; background: #2ecc71; top: 55%; left: 35%; animation-duration: 20s; animation-delay: 10s; filter: blur(70px);"></div>
+            <div class="shape" style="position: absolute; width: 500px; height: 500px; background: #f1c40f; top: 28%; right: 18%; animation-duration: 35s; animation-delay: 7s; filter: blur(85px);"></div>
+            <div class="shape" style="position: absolute; width: 350px; height: 350px; background: #9b59b6; bottom: 20%; left: 30%; animation-duration: 28s; animation-delay: 12s; filter: blur(75px);"></div>
+            <div class="shape" style="position: absolute; width: 450px; height: 450px; background: #1abc9c; top: 12%; right: 25%; animation-duration: 22s; animation-delay: 8s; filter: blur(80px);"></div>
+            <div class="shape" style="position: absolute; width: 250px; height: 250px; background: #e67e22; bottom: 35%; right: 20%; animation-duration: 18s; animation-delay: 15s; filter: blur(65px);"></div>
+            <div class="shape" style="position: absolute; width: 550px; height: 550px; background: #3498db; top: 48%; left: 18%; animation-duration: 32s; animation-delay: 4s; filter: blur(85px);"></div>
+        </div>
+
+    <div class="nav-container">
+        <div class="logo-container">
+            <img src="images/logo.png" alt="Logo" class="logo-image">
+        </div>
+        <nav class="navbar">
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="find-stations.html">Find Stations</a></li>
+                <li><a href="schedule.html">Schedule</a></li>
+                <li class="active"><a href="history.html">History</a></li>
+                <li><a href="settings.html">Settings</a></li>
+            </ul>
+        </nav>
+    </div>
+    
+    <div class="container">
+        <header class="page-header">
+            <h1> Charging History</h1>
+            <p>View and manage all your past EV charging sessions. Analyze your charging habits and track usage.</p>
+        </header>
+
+        <section class="filters-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="date-range">Date Range</label>
+                    <select id="date-range">
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="custom-date-range" style="display: none;">
+                    <label>Custom Date Range</label>
+                    <div class="date-range-inputs">
+                        <input type="text" id="start-date" placeholder="Start Date">
+                        <input type="text" id="end-date" placeholder="End Date">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="station-search">Search by Station</label>
+                    <input type="text" id="station-search" placeholder="Enter station name">
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="location-filter">Filter by Location</label>
+                    <select id="location-filter">
+                        <option value="">All Locations</option>
+                        <option value="Casablanca">Casablanca</option>
+                        <option value="Rabat">Rabat</option>
+                        <option value="Kenitra">Kenitra</option>
+                        <option value="Agadir">Agadir</option>
+                        <option value="Marrakech">Marrakech</option>
+                        <option value="Tangier">Tangier</option>
+                        <option value="Oujda">Oujda</option>
+                        <option value="Errachidia">Errachidia</option>
+                        <option value="Beni Mellal">Beni Mellal</option>
+                        <option value="Tetouan">Tetouan</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="energy-filter">Filter by Energy Source</label>
+                    <select id="energy-filter">
+                        <option value="">All Sources</option>
+                        <option value="renewable">Renewable</option>
+                        <option value="solar">Solar</option>
+                        <option value="standard">Standard Grid</option>
+                        <option value="mixed">Mixed</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="plug-type">Filter by Plug Type</label>
+                    <select id="plug-type">
+                        <option value="">All Plug Types</option>
+                        <option value="CCS">CCS</option>
+                        <option value="Type 2">Type 2</option>
+                        <option value="CHAdeMO">CHAdeMO</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <button class="btn btn-primary" id="apply-filters">Apply Filters</button>
+                <button class="btn btn-secondary" id="reset-filters">Reset Filters</button>
+            </div>
+        </section>
+
+        <div class="actions-row">
+            <div>
+                <button class="btn btn-secondary" id="download-history">
+                    <i class="fas fa-download"></i> Download History (CSV)
+                </button>
+            </div>
+            <div>
+                <button class="btn btn-secondary" id="manage-history">
+                    <i class="fas fa-cog"></i> Manage History
+                </button>
+            </div>
+        </div>
+
+        <section class="analytics-panel">
+            <div class="analytics-item">
+                <h3>48</h3>
+                <p>Total Sessions</p>
+            </div>
+            <div class="analytics-item">
+                <h3>1087 kWh</h3>
+                <p>Total Energy Used</p>
+            </div>
+            <div class="analytics-item">
+                <h3>$240</h3>
+                <p>Total Cost</p>
+            </div>
+            <div class="analytics-item">
+                <h3>63%</h3>
+                <p>Green Energy</p>
+            </div>
+            <div class="analytics-item">
+                <h3>43 min</h3>
+                <p>Avg. Duration</p>
+            </div>
+        </section>
+
+        <section class="history-list" id="history-list">
+            <!-- History cards will be dynamically inserted here -->
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        // Sample data for charging history
+        const chargingHistory = [
+            {
+                station: "Green Energy Station",
+                location: "Casablanca",
+                date: "March 15, 2025",
+                time: "14:30",
+                duration: "45 mins",
+                energy: "22.5 kWh",
+                cost: "$5.40",
+                source: "100% Renewable",
+                sourceType: "renewable",
+                plugType: "CCS"
+            },
+            {
+                station: "Urban FastCharge",
+                location: "Rabat",
+                date: "March 13, 2025",
+                time: "18:20",
+                duration: "30 mins",
+                energy: "18.3 kWh",
+                cost: "$4.10",
+                source: "Standard Grid",
+                sourceType: "standard",
+                plugType: "Type 2"
+            },
+            {
+                station: "Highway Hub",
+                location: "Kenitra",
+                date: "March 10, 2025",
+                time: "11:00",
+                duration: "1 hour",
+                energy: "40.7 kWh",
+                cost: "$9.90",
+                source: "Renewable",
+                sourceType: "renewable",
+                plugType: "CHAdeMO"
+            },
+            {
+                station: "Ocean View Station",
+                location: "Agadir",
+                date: "March 5, 2025",
+                time: "07:45",
+                duration: "50 mins",
+                energy: "25.2 kWh",
+                cost: "$6.30",
+                source: "Mixed",
+                sourceType: "mixed",
+                plugType: "CCS"
+            },
+            {
+                station: "Solar Boost Point",
+                location: "Marrakech",
+                date: "February 25, 2025",
+                time: "20:10",
+                duration: "1 hr 10 mins",
+                energy: "32.0 kWh",
+                cost: "$7.80",
+                source: "100% Solar",
+                sourceType: "solar",
+                plugType: "Type 2"
+            },
+            {
+                station: "City EV Stop",
+                location: "Tangier",
+                date: "February 20, 2025",
+                time: "13:00",
+                duration: "40 mins",
+                energy: "20.5 kWh",
+                cost: "$5.00",
+                source: "Standard",
+                sourceType: "standard",
+                plugType: "CCS"
+            },
+            {
+                station: "Tech Valley Station",
+                location: "Oujda",
+                date: "February 17, 2025",
+                time: "10:30",
+                duration: "25 mins",
+                energy: "12.0 kWh",
+                cost: "$3.00",
+                source: "Renewable",
+                sourceType: "renewable",
+                plugType: "CHAdeMO"
+            },
+            {
+                station: "Desert EcoCharge",
+                location: "Errachidia",
+                date: "February 10, 2025",
+                time: "06:45",
+                duration: "1 hr",
+                energy: "35.8 kWh",
+                cost: "$8.60",
+                source: "Solar Hybrid",
+                sourceType: "solar",
+                plugType: "Type 2"
+            },
+            {
+                station: "Atlas Charging Spot",
+                location: "Beni Mellal",
+                date: "January 30, 2025",
+                time: "16:00",
+                duration: "55 mins",
+                energy: "28.6 kWh",
+                cost: "$6.90",
+                source: "Grid + Solar",
+                sourceType: "mixed",
+                plugType: "CCS"
+            },
+            {
+                station: "North Plug Hub",
+                location: "Tetouan",
+                date: "January 25, 2025",
+                time: "19:30",
+                duration: "35 mins",
+                energy: "17.2 kWh",
+                cost: "$4.20",
+                source: "Renewable",
+                sourceType: "renewable",
+                plugType: "CHAdeMO"
+            }
+        ];
+
+        // Initialize date pickers
+        flatpickr("#start-date", {
+            dateFormat: "Y-m-d",
+            maxDate: "today"
+        });
+
+        flatpickr("#end-date", {
+            dateFormat: "Y-m-d",
+            maxDate: "today"
+        });
+
+        // Show/hide custom date range based on selection
+        document.getElementById('date-range').addEventListener('change', function() {
+            const customDateRange = document.getElementById('custom-date-range');
+            if (this.value === 'custom') {
+                customDateRange.style.display = 'block';
+            } else {
+                customDateRange.style.display = 'none';
+            }
+        });
+
+        // Function to render history cards
+        function renderHistoryCards(historyData) {
+            const historyList = document.getElementById('history-list');
+            
+            if (historyData.length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-battery-quarter"></i>
+                        <h3>No charging sessions found</h3>
+                        <p>Try adjusting your filters or check back later for new sessions.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            
+            historyData.forEach(session => {
+                const card = document.createElement('div');
+                card.className = 'history-card';
+                
+                // Determine source class for styling
+                let sourceClass = '';
+                if (session.sourceType === 'renewable') sourceClass = 'renewable';
+                else if (session.sourceType === 'solar') sourceClass = 'solar';
+                else if (session.sourceType === 'standard') sourceClass = 'standard';
+                else if (session.sourceType === 'mixed') sourceClass = 'mixed';
+                
+                card.innerHTML = `
+                    <div class="history-summary">
+                        <h4>${session.station} – ${session.location}</h4>
+                        <p><i class="fas fa-calendar-alt"></i> ${session.date} - ${session.time}</p>
+                        <p><i class="fas fa-clock"></i> Duration: ${session.duration}</p>
+                        <p><i class="fas fa-bolt"></i> Energy Used: ${session.energy}</p>
+                        <p><i class="fas fa-dollar-sign"></i> Cost: ${session.cost}</p>
+                        <p><i class="fas fa-leaf"></i> Source: ${session.source} <span class="energy-source ${sourceClass}">${session.sourceType}</span></p>
+                        <p><i class="fas fa-plug"></i> Plug Type: ${session.plugType}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-secondary btn-sm"><i class="fas fa-bookmark"></i> Book Again</button>
+                        <button class="btn btn-secondary btn-sm"><i class="fas fa-tag"></i> Add Tag</button>
+                        <button class="btn btn-secondary btn-sm"><i class="fas fa-trash-alt"></i> Delete</button>
+                    </div>
+                `;
+                
+                historyList.appendChild(card);
+            });
+        }
+
+        // Function to filter history based on selected filters
+        function filterHistory() {
+            const dateRange = document.getElementById('date-range').value;
+            const stationSearch = document.getElementById('station-search').value.toLowerCase();
+            const locationFilter = document.getElementById('location-filter').value;
+            const energyFilter = document.getElementById('energy-filter').value;
+            const plugTypeFilter = document.getElementById('plug-type').value;
+            
+            let filteredHistory = [...chargingHistory];
+            
+            // Filter by station name (search)
+            if (stationSearch) {
+                filteredHistory = filteredHistory.filter(session => 
+                    session.station.toLowerCase().includes(stationSearch) || 
+                    session.location.toLowerCase().includes(stationSearch)
+                );
+            }
+            
+            // Filter by location
+            if (locationFilter) {
+                filteredHistory = filteredHistory.filter(session => 
+                    session.location === locationFilter
+                );
+            }
+            
+            // Filter by energy source
+            if (energyFilter) {
+                filteredHistory = filteredHistory.filter(session => 
+                    session.sourceType === energyFilter
+                );
+            }
+            
+            // Filter by plug type
+            if (plugTypeFilter) {
+                filteredHistory = filteredHistory.filter(session => 
+                    session.plugType === plugTypeFilter
+                );
+            }
+            
+            // Filter by date range (simplified for this example)
+            // In a real app, you would parse dates and compare them properly
+            if (dateRange && dateRange !== 'custom') {
+                const days = parseInt(dateRange);
+                // This is a simplified filter - in reality you'd compare actual dates
+                filteredHistory = filteredHistory.slice(0, days);
+            }
+            
+            renderHistoryCards(filteredHistory);
+        }
+
+        // Initial render
+        renderHistoryCards(chargingHistory);
+
+        // Event listeners
+        document.getElementById('apply-filters').addEventListener('click', filterHistory);
+        
+        document.getElementById('reset-filters').addEventListener('click', function() {
+            document.getElementById('date-range').value = '7';
+            document.getElementById('custom-date-range').style.display = 'none';
+            document.getElementById('station-search').value = '';
+            document.getElementById('location-filter').value = '';
+            document.getElementById('energy-filter').value = '';
+            document.getElementById('plug-type').value = '';
+            renderHistoryCards(chargingHistory);
+        });
+        
+        document.getElementById('download-history').addEventListener('click', function() {
+            alert('Preparing your download... This would generate a CSV file in a real application.');
+        });
+        
+        document.getElementById('manage-history').addEventListener('click', function() {
+            alert('Management options would appear here in a real application.');
+        });
+    </script>
+</body>
+</html>
